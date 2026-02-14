@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>APLIKASI RT DIGITAL FULL</title>
+
+<style>
+body{font-family:Arial;background:#eef2f7;margin:0}
+header{background:#1e3c72;color:white;padding:15px;text-align:center;font-size:22px}
+.container{padding:20px}
+.card{background:white;padding:15px;margin-bottom:20px;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,0.1)}
+input,select{padding:6px;margin:3px;width:150px}
+button{padding:6px 10px;margin:3px;border:none;border-radius:4px;background:#1e3c72;color:white;cursor:pointer}
+table{border-collapse:collapse;width:100%;font-size:12px}
+th{background:yellow}
+th,td{border:1px solid #ccc;padding:4px;text-align:left}
+.dashboard{display:flex;flex-wrap:wrap;gap:10px}
+.box{background:#1e3c72;color:white;padding:12px;border-radius:8px;flex:1;min-width:130px;text-align:center}
+</style>
+</head>
+<body>
+
+<header>APLIKASI PENDATAAN WARGA RT DIGITAL</header>
+
+<div class="container">
+
+<!-- INPUT DATA -->
+<div class="card">
+<h3>Input Data Warga</h3>
+
+<input id="nama" placeholder="Nama Lengkap">
+<input id="nik" placeholder="NIK">
+<input id="kk" placeholder="No KK">
+
+<select id="jk">
+<option>Laki-Laki</option>
+<option>Perempuan</option>
+</select>
+
+<input id="tempat" placeholder="Tempat Lahir">
+<input type="date" id="tgl">
+<input id="alamat" placeholder="Alamat">
+<input id="rt" placeholder="RT">
+<input id="rw" placeholder="RW">
+
+<select id="agama">
+<option>Islam</option><option>Kristen</option>
+<option>Katolik</option><option>Hindu</option>
+<option>Buddha</option><option>Konghucu</option>
+</select>
+
+<select id="pendidikan">
+<option>SD</option><option>SMP</option>
+<option>SMA</option><option>D3</option>
+<option>S1</option><option>S2</option>
+</select>
+
+<input id="pekerjaan" placeholder="Pekerjaan">
+
+<select id="goldar">
+<option>A</option><option>B</option>
+<option>AB</option><option>O</option>
+</select>
+
+<select id="statuskawin">
+<option>Belum Kawin</option>
+<option>Kawin</option>
+<option>Cerai</option>
+</select>
+
+<select id="wn">
+<option>WNI</option>
+<option>WNA</option>
+</select>
+
+<select id="statusrumah">
+<option>Milik Sendiri</option>
+<option>Kontrak</option>
+<option>Numpang</option>
+</select>
+
+<select id="statuskeluarga">
+<option>Kepala Keluarga</option>
+<option>Istri</option>
+<option>Anak</option>
+<option>Lainnya</option>
+</select>
+
+<button onclick="simpan()">Simpan</button>
+</div>
+
+<!-- DASHBOARD -->
+<div class="card">
+<h3>Dashboard Statistik</h3>
+<div class="dashboard">
+<div class="box" id="totalWarga">Total Warga: 0</div>
+<div class="box" id="totalKK">Total KK: 0</div>
+<div class="box" id="totalL">Laki-Laki: 0</div>
+<div class="box" id="totalP">Perempuan: 0</div>
+<div class="box" id="balita">Balita: 0</div>
+<div class="box" id="anak">Anak: 0</div>
+<div class="box" id="dewasa">Dewasa: 0</div>
+<div class="box" id="lansia">Lansia: 0</div>
+</div>
+</div>
+
+<!-- DATA -->
+<div class="card">
+<h3>Data Warga</h3>
+
+<input id="cari" placeholder="Cari Nama / NIK / KK" onkeyup="tampil()">
+<input id="cariKK" placeholder="Cetak KK berdasarkan No KK">
+<button onclick="cetakKK()">Cetak KK</button>
+
+<table>
+<thead>
+<tr>
+<th>No</th>
+<th>Nama</th>
+<th>NIK</th>
+<th>KK</th>
+<th>JK</th>
+<th>Tempat Lahir</th>
+<th>Tgl Lahir</th>
+<th>Alamat</th>
+<th>RT</th>
+<th>RW</th>
+<th>Agama</th>
+<th>Pendidikan</th>
+<th>Pekerjaan</th>
+<th>Gol Darah</th>
+<th>Status Kawin</th>
+<th>Kewarganegaraan</th>
+<th>Usia</th>
+<th>Status Rumah</th>
+<th>Status Keluarga</th>
+<th>Aksi</th>
+</tr>
+</thead>
+<tbody id="tabel"></tbody>
+</table>
+</div>
+
+<!-- KEUANGAN -->
+<div class="card">
+<h3>Laporan Keuangan RT</h3>
+
+<input id="tglKas" type="date">
+<input id="ketKas" placeholder="Keterangan">
+<input id="masukKas" placeholder="Kas Masuk">
+<input id="keluarKas" placeholder="Kas Keluar">
+<button onclick="simpanKas()">Simpan</button>
+
+<table>
+<thead>
+<tr>
+<th>No</th>
+<th>Tanggal</th>
+<th>Keterangan</th>
+<th>Masuk</th>
+<th>Keluar</th>
+</tr>
+</thead>
+<tbody id="tabelKas"></tbody>
+</table>
+
+<h4 id="saldoKas">Saldo: 0</h4>
+</div>
+
+</div>
+
+<script>
+
+function hitungUsia(t){
+let lahir=new Date(t);
+let now=new Date();
+return now.getFullYear()-lahir.getFullYear();
+}
+
+function simpan(){
+let data=JSON.parse(localStorage.getItem("dataRT"))||[];
+
+data.push({
+nama:nama.value,
+nik:nik.value,
+kk:kk.value,
+jk:jk.value,
+tempat:tempat.value,
+tgl:tgl.value,
+alamat:alamat.value,
+rt:rt.value,
+rw:rw.value,
+agama:agama.value,
+pendidikan:pendidikan.value,
+pekerjaan:pekerjaan.value,
+goldar:goldar.value,
+statuskawin:statuskawin.value,
+wn:wn.value,
+usia:hitungUsia(tgl.value),
+statusrumah:statusrumah.value,
+statuskeluarga:statuskeluarga.value
+});
+
+localStorage.setItem("dataRT",JSON.stringify(data));
+tampil();
+}
+
+function tampil(){
+let data=JSON.parse(localStorage.getItem("dataRT"))||[];
+let filter=cari.value.toLowerCase();
+tabel.innerHTML="";
+
+let laki=0,perempuan=0,kkSet=new Set();
+let balita=0,anak=0,dewasa=0,lansia=0;
+
+data.forEach((w,i)=>{
+if(w.nama.toLowerCase().includes(filter)||w.nik.includes(filter)||w.kk.includes(filter)){
+
+if(w.jk=="Laki-Laki") laki++;
+if(w.jk=="Perempuan") perempuan++;
+kkSet.add(w.kk);
+
+if(w.usia<=5) balita++;
+else if(w.usia<=17) anak++;
+else if(w.usia<=59) dewasa++;
+else lansia++;
+
+tabel.innerHTML+=`
+<tr>
+<td>${i+1}</td>
+<td>${w.nama}</td>
+<td>${w.nik}</td>
+<td>${w.kk}</td>
+<td>${w.jk}</td>
+<td>${w.tempat}</td>
+<td>${w.tgl}</td>
+<td>${w.alamat}</td>
+<td>${w.rt}</td>
+<td>${w.rw}</td>
+<td>${w.agama}</td>
+<td>${w.pendidikan}</td>
+<td>${w.pekerjaan}</td>
+<td>${w.goldar}</td>
+<td>${w.statuskawin}</td>
+<td>${w.wn}</td>
+<td>${w.usia}</td>
+<td>${w.statusrumah}</td>
+<td>${w.statuskeluarga}</td>
+<td>
+<button onclick="cetakSurat(${i})">Surat</button>
+<button onclick="hapus(${i})">Hapus</button>
+</td>
+</tr>`;
+}
+});
+
+totalWarga.innerHTML="Total Warga: "+data.length;
+totalL.innerHTML="Laki-Laki: "+laki;
+totalP.innerHTML="Perempuan: "+perempuan;
+totalKK.innerHTML="Total KK: "+kkSet.size;
+balita.innerHTML="Balita: "+balita;
+anak.innerHTML="Anak: "+anak;
+dewasa.innerHTML="Dewasa: "+dewasa;
+lansia.innerHTML="Lansia: "+lansia;
+}
+
+function hapus(i){
+let data=JSON.parse(localStorage.getItem("dataRT"));
+data.splice(i,1);
+localStorage.setItem("dataRT",JSON.stringify(data));
+tampil();
+}
+
+function cetakKK(){
+let data=JSON.parse(localStorage.getItem("dataRT"))||[];
+let noKK=cariKK.value;
+let anggota=data.filter(w=>w.kk===noKK);
+if(anggota.length==0){alert("No KK tidak ditemukan");return;}
+
+let isi="<h2 style='text-align:center'>KARTU KELUARGA</h2>";
+isi+="<p>No KK: "+noKK+"</p>";
+isi+="<table border='1' width='100%'><tr><th>No</th><th>Nama</th><th>NIK</th><th>Status Keluarga</th></tr>";
+anggota.forEach((a,i)=>{
+isi+="<tr><td>"+(i+1)+"</td><td>"+a.nama+"</td><td>"+a.nik+"</td><td>"+a.statuskeluarga+"</td></tr>";
+});
+isi+="</table>";
+let win=window.open("");
+win.document.write(isi);
+win.print();
+}
+
+function cetakSurat(i){
+let data=JSON.parse(localStorage.getItem("dataRT"))||[];
+let w=data[i];
+
+let nomor=localStorage.getItem("nomorSuratRT")||1;
+localStorage.setItem("nomorSuratRT",parseInt(nomor)+1);
+
+let sekarang=new Date();
+let format=String(nomor).padStart(3,'0')+"/SK-RT/"+(sekarang.getMonth()+1)+"/"+sekarang.getFullYear();
+
+let isi=`
+<div style="text-align:center">
+<img src="logo.png" width="80"><br>
+<h3>PEMERINTAH RT</h3>
+<h2>SURAT KETERANGAN</h2>
+Nomor: ${format}
+</div>
+<br>
+<p>Nama: ${w.nama}<br>
+NIK: ${w.nik}<br>
+No KK: ${w.kk}<br>
+Alamat: ${w.alamat}</p>
+<br><br>
+<p style="text-align:right">Ketua RT<br><br><br>(...................)</p>
+`;
+
+let win=window.open("");
+win.document.write(isi);
+win.print();
+}
+
+function simpanKas(){
+let data=JSON.parse(localStorage.getItem("kasRT"))||[];
+data.push({
+tgl:tglKas.value,
+ket:ketKas.value,
+masuk:parseInt(masukKas.value)||0,
+keluar:parseInt(keluarKas.value)||0
+});
+localStorage.setItem("kasRT",JSON.stringify(data));
+tampilKas();
+}
+
+function tampilKas(){
+let data=JSON.parse(localStorage.getItem("kasRT"))||[];
+tabelKas.innerHTML="";
+let saldo=0;
+data.forEach((k,i)=>{
+saldo+=k.masuk-k.keluar;
+tabelKas.innerHTML+=`
+<tr>
+<td>${i+1}</td>
+<td>${k.tgl}</td>
+<td>${k.ket}</td>
+<td>${k.masuk}</td>
+<td>${k.keluar}</td>
+</tr>`;
+});
+saldoKas.innerHTML="Saldo: "+saldo;
+}
+
+tampil();
+tampilKas();
+
+</script>
+</body>
+</html>
