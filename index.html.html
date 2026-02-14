@@ -1,0 +1,187 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>RT DIGITAL SUPER FINAL</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body{font-family:Arial;background:#f2f4f8;margin:0;padding:10px}
+h2{text-align:center}
+.container{background:#fff;padding:15px;margin-bottom:15px;border-radius:10px;box-shadow:0 4px 10px rgba(0,0,0,0.1)}
+input,select,button{padding:8px;margin:4px 0;width:100%;border-radius:6px;border:1px solid #ccc}
+button{background:#0d6efd;color:white;border:none}
+button:hover{background:#0b5ed7}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th,td{border:1px solid #ccc;padding:6px;text-align:center}
+th{background:#0d6efd;color:white}
+.logo{width:70px}
+@media print{.no-print{display:none}}
+</style>
+</head>
+<body>
+
+<h2>RT DIGITAL SUPER FINAL</h2>
+
+<div class="container no-print">
+<h3>Login Warga (View Only)</h3>
+<input id="loginKK" placeholder="Masukkan No KK">
+<button onclick="loginWarga()">Lihat Data KK</button>
+<div id="viewKK"></div>
+</div>
+
+<div class="container no-print">
+<h3>Input Data Warga (Admin)</h3>
+
+<input id="nama" placeholder="Nama Lengkap">
+<input id="nik" placeholder="NIK 16 Digit" maxlength="16">
+<input id="kk" placeholder="No KK 16 Digit" maxlength="16">
+<input id="tempat" placeholder="Tempat Lahir">
+<input id="tgl" type="date">
+<input id="alamat" placeholder="Alamat">
+<input id="rt" placeholder="RT">
+<input id="rw" placeholder="RW">
+
+<select id="jk"><option>Laki-Laki</option><option>Perempuan</option></select>
+<select id="agama"><option>Islam</option><option>Kristen</option><option>Katolik</option><option>Hindu</option><option>Buddha</option><option>Konghucu</option></select>
+<select id="pendidikan"><option>Tidak Sekolah</option><option>SD Sederajat</option><option>SLTP Sederajat</option><option>SLTA Sederajat</option><option>S1</option><option>S2</option><option>S3</option><option>D1</option></select>
+<select id="pekerjaan"><option>Belum Bekerja</option><option>Pelajar Mahasiswa</option><option>Buruh Harian Lepas</option><option>Mengurus Rumah Tangga</option><option>PNS</option><Karyawan Swasta</option><option>Guru</>option></select>
+<select id="goldar"><option>A</option><option>B</option><option>AB</option><option>O</option><option>Tidak Tahu</select>
+<select id="statusKawin"><option>Belum Kawin</option><option>Kawin</option><option>Cerai</option></select>
+<select id="wn"><option>WNI</option><option>WNA</option></select>
+<select id="statusRumah"><option>Milik Sendiri</option><option>Kontrak</option><option>Sewa</option></select>
+
+<button onclick="simpan()">Simpan</button>
+</div>
+
+<div class="container">
+<h3>Data Warga</h3>
+<table>
+<thead>
+<tr>
+<th>No</th><th>Nama</th><th>NIK</th><th>KK</th><th>Usia</th><th>Aksi</th>
+</tr>
+</thead>
+<tbody id="tabel"></tbody>
+</table>
+</div>
+
+<div class="container">
+<h3>Laporan Keuangan RT</h3>
+<input id="ket" placeholder="Keterangan">
+<input id="jumlah" type="number" placeholder="Jumlah">
+<select id="jenis"><option>Pemasukan</option><option>Pengeluaran</option></select>
+<button onclick="simpanKeuangan()">Simpan</button>
+<table>
+<thead><tr><th>Keterangan</th><th>Jenis</th><th>Masuk</th><th>Keluar</th></tr></thead>
+<tbody id="tabelKeuangan"></tbody>
+</table>
+<h4 id="saldo"></h4>
+</div>
+
+<script>
+let data=JSON.parse(localStorage.getItem("dataRT"))||[]
+let kas=JSON.parse(localStorage.getItem("kasRT"))||[]
+
+function usia(tgl){
+let b=new Date(tgl)
+let t=new Date()
+return t.getFullYear()-b.getFullYear()
+}
+
+function simpan(){
+let nik=document.getElementById("nik").value
+if(nik.length!=16||isNaN(nik)){alert("NIK harus 16 digit angka");return}
+if(data.find(d=>d.nik==nik)){alert("NIK sudah terdaftar");return}
+
+let obj={
+nama:nama.value,nik:nik,kk:kk.value,tempat:tempat.value,
+tgl:tgl.value,alamat:alamat.value,rt:rt.value,rw:rw.value,
+jk:jk.value,agama:agama.value,pendidikan:pendidikan.value,
+pekerjaan:pekerjaan.value,goldar:goldar.value,
+statusKawin:statusKawin.value,wn:wn.value,
+statusRumah:statusRumah.value,
+usia:usia(tgl.value)
+}
+data.push(obj)
+localStorage.setItem("dataRT",JSON.stringify(data))
+render()
+}
+
+function render(){
+tabel.innerHTML=""
+data.forEach((d,i)=>{
+tabel.innerHTML+=`<tr>
+<td>${i+1}</td>
+<td>${d.nama}</td>
+<td>${d.nik}</td>
+<td>${d.kk}</td>
+<td>${d.usia}</td>
+<td><button onclick="cetakSurat(${i})">Surat</button>
+<button onclick="cetakKK('${d.kk}')">KK</button></td>
+</tr>`
+})
+}
+
+function cetakSurat(i){
+let d=data[i]
+let w=window.open("")
+w.document.write(`
+<h3><img src='https://upload.wikimedia.org/wikipedia/commons/8/8e/Lambang_Kabupaten_Bogor.png' width='80'><br>
+SURAT KETERANGAN</h3>
+<p>Yang bertanda tangan di bawah ini menerangkan bahwa:</p>
+<p>Nama: ${d.nama}<br>NIK: ${d.nik}<br>Alamat: ${d.alamat}</p>
+<p>Demikian surat ini dibuat.</p>
+<button onclick='window.print()'>Print</button>
+`)
+}
+
+function cetakKK(noKK){
+let anggota=data.filter(d=>d.kk==noKK)
+let w=window.open("")
+w.document.write(`<h3><img src='https://upload.wikimedia.org/wikipedia/commons/9/9a/Garuda_Pancasila.png' width='80'><br>KARTU KELUARGA</h3>`)
+anggota.forEach(a=>{
+w.document.write(`${a.nama} - ${a.nik}<br>`)
+})
+w.document.write("<button onclick='window.print()'>Print</button>")
+}
+
+function loginWarga(){
+let no=loginKK.value
+let anggota=data.filter(d=>d.kk==no)
+viewKK.innerHTML=""
+if(anggota.length==0){viewKK.innerHTML="Data tidak ditemukan";return}
+anggota.forEach(a=>{
+viewKK.innerHTML+=a.nama+" - "+a.nik+"<br>"
+})
+}
+
+function simpanKeuangan(){
+let obj={ket:ket.value,jenis:jenis.value,jumlah:Number(jumlah.value)}
+kas.push(obj)
+localStorage.setItem("kasRT",JSON.stringify(kas))
+renderKas()
+}
+
+function renderKas(){
+tabelKeuangan.innerHTML=""
+let masuk=0,keluar=0
+kas.forEach(k=>{
+if(k.jenis=="Pemasukan"){masuk+=k.jumlah}
+else{keluar+=k.jumlah}
+tabelKeuangan.innerHTML+=`<tr>
+<td>${k.ket}</td>
+<td>${k.jenis}</td>
+<td>${k.jenis=="Pemasukan"?k.jumlah:"-"}</td>
+<td>${k.jenis=="Pengeluaran"?k.jumlah:"-"}</td>
+</tr>`
+})
+saldo.innerHTML="Saldo Akhir: "+(masuk-keluar)
+}
+
+render()
+renderKas()
+</script>
+
+</body>
+</html>
