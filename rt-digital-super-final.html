@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>RT Digital Super Final</title>
+
+<style>
+body{font-family:Arial;margin:0;background:#f4f6f9}
+header{background:#2c3e50;color:white;padding:15px;text-align:center}
+.container{padding:20px}
+.card{background:white;padding:15px;margin-bottom:15px;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,0.1)}
+input,select{padding:6px;margin:4px;width:100%}
+button{padding:6px 10px;margin:4px;border:none;border-radius:4px;background:#2c3e50;color:white;cursor:pointer}
+button:hover{background:#34495e}
+table{width:100%;border-collapse:collapse}
+th,td{border:1px solid #ddd;padding:6px;font-size:13px}
+th{background:#2c3e50;color:white}
+.dashboard{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.box{background:#3498db;color:white;padding:10px;border-radius:6px;text-align:center}
+.loginBox{display:flex;justify-content:center;align-items:center;height:100vh}
+.loginCard{background:white;padding:30px;border-radius:10px;width:300px;box-shadow:0 3px 10px rgba(0,0,0,0.2)}
+.smallBtn{padding:4px 6px;font-size:12px}
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<div id="loginPage" class="loginBox">
+<div class="loginCard">
+<h3>DATABASE RT DIGITAL</h3>
+
+<button onclick="showAdmin()">Login Admin</button>
+<button onclick="showWarga()">Login Warga</button>
+
+<div id="adminBox">
+<input type="text" id="user" placeholder="Username">
+<input type="password" id="pass" placeholder="Password">
+<button onclick="loginAdmin()">Masuk Admin</button>
+</div>
+
+<div id="wargaBox" style="display:none">
+<input type="text" id="kkLogin" placeholder="No KK">
+<button onclick="loginWarga()">Masuk Warga</button>
+</div>
+
+</div>
+</div>
+
+<!-- APP -->
+<div id="appPage" style="display:none">
+
+<header>
+<h2>RT DIGITAL SUPER FINAL</h2>
+<button onclick="logout()">Logout</button>
+</header>
+
+<div class="container">
+
+<div class="dashboard">
+<div class="box">Total Warga<br><span id="totalWarga">0</span></div>
+<div class="box">Total KK<br><span id="totalKK">0</span></div>
+<div class="box">Balita<br><span id="balita">0</span></div>
+<div class="box">Anak<br><span id="anak">0</span></div>
+<div class="box">Dewasa<br><span id="dewasa">0</span></div>
+<div class="box">Lansia<br><span id="lansia">0</span></div>
+</div>
+
+<div class="card" id="formCard">
+<h3>Tambah Data Warga</h3>
+
+<input id="nik" placeholder="NIK">
+<input id="kk" placeholder="No KK">
+<input id="nama" placeholder="Nama Lengkap">
+
+<select id="jk">
+<option>Laki-laki</option>
+<option>Perempuan</option>
+</select>
+
+<input id="tempat" placeholder="Tempat Lahir">
+<input type="date" id="tgl">
+
+<select id="agama">
+<option>Islam</option>
+<option>Kristen</option>
+<option>Katholik</option>
+<option>Hindu</option>
+<option>Buddha</option>
+<option>Konghucu</option>
+</select>
+
+<input id="pendidikan" placeholder="Pendidikan">
+<input id="pekerjaan" placeholder="Pekerjaan">
+
+<select id="statusNikah">
+<option>Belum Kawin</option>
+<option>Kawin</option>
+<option>Cerai</option>
+</select>
+
+<select id="statusKeluarga">
+<option>Kepala Keluarga</option>
+<option>Istri</option>
+<option>Anak</option>
+<option>Lainnya</option>
+</select>
+
+<select id="statusRumah">
+<option>Milik Sendiri</option>
+<option>Kontrak</option>
+<option>Menumpang</option>
+</select>
+
+<input id="alamat" placeholder="Alamat">
+<input id="rt" placeholder="RT">
+<input id="rw" placeholder="RW">
+<input id="hp" placeholder="No HP">
+
+<button onclick="tambah()">Simpan</button>
+</div>
+
+<div class="card">
+<h3>Data Warga</h3>
+<input id="cari" placeholder="Cari Nama / KK" onkeyup="render()">
+
+<table>
+<thead>
+<tr>
+<th>No</th>
+<th>NIK</th>
+<th>KK</th>
+<th>Nama</th>
+<th>JK</th>
+<th>Umur</th>
+<th>Pekerjaan</th>
+<th>RT</th>
+<th>RW</th>
+<th>Aksi</th>
+</tr>
+</thead>
+<tbody id="data"></tbody>
+</table>
+</div>
+
+</div>
+</div>
+
+<script>
+
+const PASSWORD_ADMIN="RT2026"
+let warga=JSON.parse(localStorage.getItem("warga"))||[]
+let editIndex=-1
+
+function save(){
+localStorage.setItem("warga",JSON.stringify(warga))
+}
+
+function hitungUmur(tgl){
+let lahir=new Date(tgl)
+let diff=Date.now()-lahir.getTime()
+let umur=new Date(diff)
+return Math.abs(umur.getUTCFullYear()-1970)
+}
+
+function showAdmin(){
+adminBox.style.display="block"
+wargaBox.style.display="none"
+}
+
+function showWarga(){
+adminBox.style.display="none"
+wargaBox.style.display="block"
+}
+
+function loginAdmin(){
+if(user.value==="admin" && pass.value===PASSWORD_ADMIN){
+localStorage.setItem("role","admin")
+location.reload()
+}else alert("Login gagal")
+}
+
+function loginWarga(){
+let ada=warga.find(w=>w.kk===kkLogin.value)
+if(ada){
+localStorage.setItem("role","warga")
+localStorage.setItem("kkAktif",kkLogin.value)
+location.reload()
+}else alert("KK tidak ditemukan")
+}
+
+function logout(){
+localStorage.removeItem("role")
+localStorage.removeItem("kkAktif")
+location.reload()
+}
+
+function tambah(){
+
+let umur=hitungUmur(tgl.value)
+
+let data={
+nik:nik.value,
+kk:kk.value,
+nama:nama.value,
+jk:jk.value,
+umur:umur,
+pekerjaan:pekerjaan.value,
+rt:rt.value,
+rw:rw.value
+}
+
+if(editIndex==-1){
+warga.push(data)
+}else{
+warga[editIndex]=data
+editIndex=-1
+}
+
+save()
+render()
+}
+
+function hapus(i){
+if(confirm("Hapus data?")){
+warga.splice(i,1)
+save()
+render()
+}
+}
+
+function edit(i){
+let d=warga[i]
+nik.value=d.nik
+kk.value=d.kk
+nama.value=d.nama
+jk.value=d.jk
+pekerjaan.value=d.pekerjaan
+rt.value=d.rt
+rw.value=d.rw
+editIndex=i
+}
+
+function render(){
+
+let role=localStorage.getItem("role")
+let kkAktif=localStorage.getItem("kkAktif")
+
+let filter=warga
+
+if(role==="warga"){
+filter=warga.filter(w=>w.kk===kkAktif)
+formCard.style.display="none"
+}else{
+formCard.style.display="block"
+}
+
+let keyword=cari.value?.toLowerCase()||""
+filter=filter.filter(w=>w.nama.toLowerCase().includes(keyword)||w.kk.includes(keyword))
+
+let html=""
+let no=1
+
+filter.forEach((d,i)=>{
+html+=`<tr>
+<td>${no++}</td>
+<td>${d.nik||""}</td>
+<td>${d.kk}</td>
+<td>${d.nama}</td>
+<td>${d.jk}</td>
+<td>${d.umur}</td>
+<td>${d.pekerjaan||""}</td>
+<td>${d.rt}</td>
+<td>${d.rw}</td>
+<td>${role==="admin"?`
+<button class="smallBtn" onclick="edit(${i})">Edit</button>
+<button class="smallBtn" onclick="hapus(${i})">Hapus</button>`:"-"}</td>
+</tr>`
+})
+
+data.innerHTML=html
+
+// DASHBOARD
+totalWarga.innerText=warga.length
+totalKK.innerText=[...new Set(warga.map(w=>w.kk))].length
+balita.innerText=warga.filter(w=>w.umur<=5).length
+anak.innerText=warga.filter(w=>w.umur>=6&&w.umur<=17).length
+dewasa.innerText=warga.filter(w=>w.umur>=18&&w.umur<=59).length
+lansia.innerText=warga.filter(w=>w.umur>=60).length
+
+}
+
+window.onload=function(){
+let role=localStorage.getItem("role")
+if(role){
+loginPage.style.display="none"
+appPage.style.display="block"
+render()
+}
+}
+
+</script>
+
+</body>
+</html>
